@@ -1,0 +1,60 @@
+/* ── RESET & CSS VARIABLES ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Backgrounds */
+  --bg:  #05080f;
+  --bg2: #0a0f1a;
+  --bg3: #0f1724;
+  --card: #111d2e;
+
+  /* Borders */
+  --border:  #1a2840;
+  --border2: #243352;
+
+  /* Accent colors */
+  --cyan:      #00e5ff;
+  --cyan-dim:  #00b8cc;
+  --cyan-glow:  rgba(0, 229, 255, 0.12);
+  --cyan-glow2: rgba(0, 229, 255, 0.06);
+  --green:  #00ff88;
+  --orange: #ff8c42;
+  --red:    #ff4757;
+  --purple: #bd93f9;
+
+  /* Text */
+  --text:  #dce8f0;
+  --text2: #8a9ab8;
+  --text3: #3f5070;
+
+  /* Fonts */
+  --mono: 'JetBrains Mono', monospace;
+  --disp: 'Syne', sans-serif;
+  --body: 'DM Sans', sans-serif;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  display: flex;
+  flex-direction: column;
+  font-weight: 300;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: var(--bg2); }
+::-webkit-scrollbar-thumb  { background: var(--border2); border-radius: 2px; }
+
+/* ── SELECTION ── */
+::selection { background: var(--cyan-glow); color: var(--cyan); }

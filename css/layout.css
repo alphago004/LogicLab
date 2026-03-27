@@ -1,0 +1,53 @@
+/* ── HEADER ── */
+header {
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0 1.5rem;
+  background: rgba(5, 8, 15, 0.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  z-index: 10;
+}
+
+.logo {
+  font-family: var(--disp);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--cyan);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.logo span { color: var(--text3); font-weight: 700; }
+
+.tabs { display: flex; gap: 3px; flex: 1; }
+
+.tab-btn {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 0.45rem 1.1rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tab-btn:hover  { color: var(--text2); background: var(--bg2); }
+.tab-btn.active { color: var(--cyan); background: var(--cyan-glow); border-color: rgba(0, 229, 255, 0.2); }
+
+.header-by { font-family: var(--mono); font-size: 0.62rem; color: var(--text3); white-space: nowrap; }
+.header-by a { color: var(--cyan); text-decoration: none; }
+
+/* ── TAB PANELS ── */
+.tab-panel        { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+.tab-panel.active { display: flex; }
+
+#tab-gates.active   { flex-direction: row; }
+#tab-boolean.active { flex-direction: column; gap: 0; padding: 0; }
+#tab-dfa.active     { flex-direction: column; }

@@ -1,0 +1,262 @@
+/* ══════════════════════════════════════
+   CIRCUIT BUILDER — Logic Gates Tab
+══════════════════════════════════════ */
+
+/* ── Palette sidebar ─────────────────── */
+.circuit-palette {
+  width: 158px;
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  padding: 0.85rem 0.7rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  gap: 0;
+}
+
+.pal-sec { margin-bottom: 1.1rem; }
+
+.pal-lbl {
+  font-family: var(--mono);
+  font-size: 0.57rem;
+  color: var(--text3);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.45rem;
+}
+
+.pal-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--text2);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.44rem 0.6rem;
+  margin-bottom: 0.28rem;
+  cursor: grab;
+  transition: border-color 0.13s, color 0.13s;
+  user-select: none;
+}
+.pal-item:hover  { border-color: var(--ic, var(--cyan)); color: var(--ic, var(--cyan)); }
+.pal-item:active { cursor: grabbing; }
+
+.pal-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+.pal-btn {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 0.69rem;
+  color: var(--text2);
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.42rem 0.55rem;
+  cursor: pointer;
+  margin-bottom: 0.28rem;
+  transition: border-color 0.13s, color 0.13s;
+  text-align: left;
+}
+.pal-btn:hover        { border-color: var(--border2); color: var(--text); }
+.pal-btn.danger:hover { border-color: var(--red); color: var(--red); }
+
+.pal-tip {
+  font-family: var(--mono);
+  font-size: 0.61rem;
+  color: var(--text3);
+  margin-bottom: 0.32rem;
+  line-height: 1.6;
+}
+.pal-tip kbd {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  padding: 0 3px;
+  color: var(--text2);
+}
+
+/* ── Canvas area ─────────────────────── */
+.circuit-canvas-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+#circuit-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#circuit-svg.wiring { cursor: crosshair; }
+
+/* Wiring mode badge */
+.wiring-badge {
+  display: none;
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  color: var(--cyan);
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  padding: 0.38rem 1.1rem;
+  border-radius: 20px;
+  pointer-events: none;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+}
+.wiring-badge kbd {
+  background: rgba(0,229,255,0.15);
+  border: 1px solid rgba(0,229,255,0.3);
+  border-radius: 3px;
+  padding: 0 4px;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+}
+
+/* Canvas toolbar */
+.canvas-toolbar {
+  position: absolute;
+  bottom: 14px;
+  right: 16px;
+  display: flex;
+  gap: 6px;
+}
+.ctool-btn {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text3);
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+  transition: all 0.13s;
+}
+.ctool-btn:hover { color: var(--cyan); border-color: rgba(0,229,255,0.3); }
+
+/* SVG port hover cursor */
+.port    { cursor: crosshair; }
+.in-zone { cursor: crosshair; }
+
+/* ── Right info panel ────────────────── */
+.circuit-info-panel {
+  width: 218px;
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.panel-title {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--cyan);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 0.85rem;
+  flex-shrink: 0;
+}
+
+.ci-tt-title { margin-top: 1.4rem; }
+
+.ci-body { display: flex; flex-direction: column; }
+
+.ci-type {
+  font-family: var(--disp);
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin-bottom: 0.45rem;
+}
+
+.ci-expr {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text2);
+  margin-bottom: 0.55rem;
+}
+
+.ci-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.18rem 0;
+}
+
+.ci-lbl {
+  font-family: var(--mono);
+  font-size: 0.67rem;
+  color: var(--text3);
+}
+
+.ci-val {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.ci-desc {
+  font-size: 0.72rem;
+  color: var(--text2);
+  line-height: 1.55;
+  margin-top: 0.5rem;
+}
+
+.ci-hint {
+  font-family: var(--mono);
+  font-size: 0.63rem;
+  color: var(--text3);
+  margin-top: 0.4rem;
+}
+
+.ci-empty {
+  font-family: var(--mono);
+  font-size: 0.67rem;
+  color: var(--text3);
+  text-align: center;
+  margin-top: 1.5rem;
+  line-height: 1.75;
+}
+
+/* ── Truth table ─────────────────────── */
+.truth-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+}
+.truth-tbl th {
+  color: var(--text3);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border);
+  padding: 0.32rem 0.4rem;
+  text-align: center;
+}
+.truth-tbl td {
+  color: var(--text2);
+  padding: 0.35rem 0.4rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(26,40,64,0.4);
+}
+.truth-tbl tr.hi td           { background: var(--cyan-glow); color: var(--cyan); }
+.truth-tbl tr.hi td:last-child { font-weight: 700; }
+
+.v1 { color: var(--cyan)  !important; }
+.v0 { color: var(--text3) !important; }

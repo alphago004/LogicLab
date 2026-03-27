@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LogicLab — Interactive Computer Architecture Learning Tool</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/base.css"/>
+  <link rel="stylesheet" href="css/layout.css"/>
+  <link rel="stylesheet" href="css/gates.css"/>
+  <link rel="stylesheet" href="css/boolean.css"/>
+  <link rel="stylesheet" href="css/automata.css"/>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="logo">Logic<span>Lab</span></div>
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="switchTab('gates', this)">⊕ Logic Gates</button>
+    <button class="tab-btn"        onclick="switchTab('boolean', this)">∑ Boolean Algebra</button>
+    <button class="tab-btn"        onclick="switchTab('dfa', this)">◉ Finite Automata</button>
+  </nav>
+  <div class="header-by">by <a href="https://github.com/alphago004" target="_blank">Sagar Bhetuwal</a></div>
+</header>
+
+<!-- ══ TAB 1: LOGIC GATES (Circuit Builder) ══ -->
+<div class="tab-panel active" id="tab-gates">
+
+  <!-- Left palette -->
+  <div class="circuit-palette" id="circuit-palette"></div>
+
+  <!-- Center canvas -->
+  <div class="circuit-canvas-wrap">
+    <svg id="circuit-svg"></svg>
+    <div class="wiring-badge" id="wiring-badge">
+      ⚡ WIRING MODE — click an <b>input pin</b> to connect &nbsp;·&nbsp; <kbd>Esc</kbd> to cancel
+    </div>
+    <div class="canvas-toolbar">
+      <button class="ctool-btn" onclick="fitView()" title="Fit all nodes into view (F)">⊡ Fit</button>
+      <button class="ctool-btn" onclick="resetZoom()" title="Reset zoom to 100%">1:1</button>
+    </div>
+  </div>
+
+  <!-- Right info panel -->
+  <div class="circuit-info-panel">
+    <div class="panel-title">Selected Gate</div>
+    <div id="circuit-info" class="ci-body"></div>
+    <div class="panel-title ci-tt-title">Truth Table</div>
+    <div id="circuit-truth"></div>
+  </div>
+
+</div>
+
+<!-- ══ TAB 2: BOOLEAN ALGEBRA ══ -->
+<div class="tab-panel" id="tab-boolean">
+  <div class="bool-top">
+    <div class="bool-row">
+      <div class="bool-group">
+        <div class="bool-lbl">Expression</div>
+        <input class="bool-in" id="bool-in" type="text"
+               placeholder="e.g.  (A AND B) OR (NOT C)"
+               spellcheck="false"/>
+      </div>
+      <button class="bbtn bbtn-p" onclick="evalBool()">Evaluate →</button>
+      <button class="bbtn bbtn-s" onclick="clearBool()">Clear</button>
+    </div>
+    <div class="bool-pills" id="bool-pills">
+      <span class="bool-pills-lbl">Quick:</span>
+    </div>
+    <div class="bool-err" id="bool-err"></div>
+  </div>
+
+  <div class="bool-body">
+    <div class="bool-tbl-area">
+      <div class="bool-tbl-title" id="bool-tbl-title">Truth Table</div>
+      <div id="bool-tbl-wrap"></div>
+    </div>
+
+    <div class="bool-info">
+      <div class="panel-title">Analysis</div>
+      <div class="iblock">
+        <div class="iblock-t">Variables</div>
+        <div class="iblock-v" id="bi-vars">—</div>
+      </div>
+      <div class="iblock">
+        <div class="iblock-t">Total Rows</div>
+        <div class="iblock-v" id="bi-rows">—</div>
+      </div>
+      <div class="iblock">
+        <div class="iblock-t">Output = 1 for</div>
+        <div class="iblock-v" id="bi-truths" style="font-size:0.68rem;line-height:1.9">—</div>
+      </div>
+      <div class="iblock">
+        <div class="iblock-t">Syntax Reference</div>
+        <div class="iblock-v" style="font-size:0.68rem;line-height:2">
+          <span class="c">AND</span> &nbsp;or&nbsp; <span class="c">&amp;</span><br>
+          <span class="c">OR</span>  &nbsp;or&nbsp; <span class="c">|</span><br>
+          <span class="c">NOT</span> &nbsp;or&nbsp; <span class="c">!</span><br>
+          <span class="c">XOR</span> &nbsp;or&nbsp; <span class="c">^</span><br>
+          Variables: <span class="c">A – Z</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 3: FINITE AUTOMATA ══ -->
+<div class="tab-panel" id="tab-dfa">
+  <div class="dfa-ctrl">
+    <select class="dfa-sel" id="dfa-sel" onchange="loadDFA()">
+      <option value="0">DFA 1 — Accepts binary strings ending in '1'</option>
+      <option value="1">DFA 2 — Accepts binary strings with even number of 1s</option>
+      <option value="2">DFA 3 — Accepts strings over {a,b} containing 'ab'</option>
+      <option value="3">DFA 4 — Accepts binary numbers divisible by 3</option>
+      <option value="4">✦ Custom Builder — Build your own DFA</option>
+    </select>
+
+    <div class="dfa-in-grp">
+      <span class="dfa-in-lbl">Input String:</span>
+      <input class="dfa-str" id="dfa-str" placeholder="e.g. 1011"/>
+    </div>
+
+    <div class="dfa-btns">
+      <button class="dbtn dbtn-step"  onclick="stepDFA()">Step →</button>
+      <button class="dbtn dbtn-run"   onclick="runDFA()">Run All</button>
+      <button class="dbtn dbtn-reset" onclick="resetDFA()">Reset</button>
+    </div>
+
+    <div class="dfa-badge" id="dfa-badge"></div>
+
+    <div class="speed-group">
+      <span class="speed-lbl">Speed:</span>
+      <select class="speed-sel" id="dfa-speed">
+        <option value="700">Slow</option>
+        <option value="400" selected>Normal</option>
+        <option value="150">Fast</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="dfa-builder-bar" id="dfa-builder-bar"></div>
+
+  <div class="dfa-body">
+    <div class="dfa-canvas-wrap">
+      <svg id="dfaCanvas"></svg>
+      <div class="dfa-label-pop" id="dfa-label-pop" style="display:none">
+        <input class="dlp-in" id="dlp-in" placeholder="label, e.g. 0"/>
+        <button class="dlp-ok" onclick="confirmLabel()">✓</button>
+        <button class="dlp-cancel" onclick="cancelLabel()">✕</button>
+      </div>
+    </div>
+
+    <div class="dfa-side">
+      <div class="dfa-desc">
+        <div class="dfa-desc-title" id="dfa-dtitle"></div>
+        <div class="dfa-desc-text"  id="dfa-dtext"></div>
+        <div class="dfa-alpha"      id="dfa-alpha"></div>
+      </div>
+      <div class="str-viz" id="str-viz"></div>
+      <div class="dfa-log">
+        <div class="log-title">Transition Log</div>
+        <div id="log-entries"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- D3.js v7 -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<!-- App scripts (order matters) -->
+<script src="js/gates.js"></script>
+<script src="js/circuit.js"></script>
+<script src="js/boolean.js"></script>
+<script src="js/automata.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
