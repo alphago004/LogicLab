@@ -48,6 +48,8 @@ const DFAS = [
 // ── State ─────────────────────────────────────────────────
 let activeDFA = null;
 let isCustom  = false;
+let isNFA     = false;   // NFA mode: multiple transitions per symbol allowed
+let nfaStates = new Set(); // active states set for NFA simulation
 
 let bMode      = 'select';
 let bSelId     = null;
@@ -63,6 +65,7 @@ let dfaTimer = null;
 let _stateCounter = 0;
 let _dfaSvg, _transG, _stateG;
 let _W = 600, _H = 400;
+let _prevNfaStates = new Set(); // NFA: states active before last step
 const SR = 36;
 
 // ── Init ──────────────────────────────────────────────────
@@ -81,8 +84,9 @@ function initDFASvg() {
       .attr('orient','auto-start-reverse')
       .append('path').attr('d','M0,1 L0,9 L9,5 Z').attr('fill', color);
   };
-  mkMarker('dfa-ah',    '#2a3d5a');
-  mkMarker('dfa-ah-on', '#00e5ff');
+  mkMarker('dfa-ah',     '#2a3d5a');
+  mkMarker('dfa-ah-on',  '#00e5ff');
+  mkMarker('dfa-ah-nfa', '#bd93f9');
 
   _dfaSvg.append('rect').attr('class','dfa-bg-rect')
     .attr('x',0).attr('y',0).attr('width','100%').attr('height','100%')
@@ -118,6 +122,8 @@ function buildBuilderToolbar() {
     <button class="bmode-btn danger" data-m="del"      onclick="setBuilderMode('del',this)">✕ Delete</button>
     <div class="builder-sep"></div>
     <span class="builder-hint" id="builder-hint">Click a state to select it</span>
+    <div class="builder-sep"></div>
+    <span class="builder-mode-tag" id="builder-mode-tag">DFA</span>
   `;
 }
 
@@ -142,18 +148,26 @@ function loadDFA() {
   dfaIdx = parseInt(document.getElementById('dfa-sel').value);
   const bar = document.getElementById('dfa-builder-bar');
 
-  if (dfaIdx === 4) {
+  if (dfaIdx === 4 || dfaIdx === 5) {
     isCustom = true;
+    isNFA    = dfaIdx === 5;
     if (bar) bar.style.display = 'flex';
     activeDFA = {
-      title:'Custom DFA', desc:'Build your own DFA using the toolbar above.',
-      alpha:'Σ = { define your own }', start:null, states:[], trans:[],
+      title: isNFA ? 'Custom NFA' : 'Custom DFA',
+      desc:  isNFA ? 'NFA mode — multiple transitions per symbol allowed. Simulator explores ALL paths.' : 'Build your own DFA using the toolbar above.',
+      alpha: 'Σ = { define your own }', start:null, states:[], trans:[],
     };
     _stateCounter=0; bSelId=null; bTransSrc=null; bPendTrans=null;
+    // Update builder bar label
+    const modeTag = document.getElementById('builder-mode-tag');
+    if (modeTag) {
+      modeTag.textContent = isNFA ? 'NFA' : 'DFA';
+      modeTag.classList.toggle('nfa', isNFA);
+    }
     const addBtn = document.querySelector('.bmode-btn[data-m="addState"]');
     setBuilderMode('addState', addBtn);
   } else {
-    isCustom=false;
+    isCustom=false; isNFA=false;
     if (bar) bar.style.display='none';
     bMode='select'; bSelId=null; bTransSrc=null; bPendTrans=null;
     const p = DFAS[dfaIdx];
@@ -173,9 +187,16 @@ function loadDFA() {
 // ── Simulation ────────────────────────────────────────────
 function resetDFA() {
   if (dfaTimer) { clearTimeout(dfaTimer); dfaTimer=null; }
-  dfaState = activeDFA ? activeDFA.start : null;
-  dfaStr   = document.getElementById('dfa-str').value;
-  dfaStep  = 0;
+  if (isNFA) {
+    nfaStates     = activeDFA?.start ? new Set([activeDFA.start]) : new Set();
+    _prevNfaStates = new Set();
+    dfaState      = null;
+  } else {
+    dfaState  = activeDFA ? activeDFA.start : null;
+    nfaStates = new Set();
+  }
+  dfaStr  = document.getElementById('dfa-str').value;
+  dfaStep = 0;
   document.getElementById('log-entries').innerHTML = '';
   const badge = document.getElementById('dfa-badge');
   badge.className='dfa-badge'; badge.textContent='';
@@ -184,6 +205,7 @@ function resetDFA() {
 
 function stepDFA() {
   if (!activeDFA) return;
+  if (isNFA) { _stepNFA(); return; }
   if (dfaStep >= dfaStr.length) { showResult(); return; }
   const sym=dfaStr[dfaStep], prev=dfaState;
   const t=activeDFA.trans.find(tr => tr.f===prev && tr.l===sym);
@@ -193,6 +215,27 @@ function stepDFA() {
   }
   dfaState=t.t; dfaStep++;
   addLog(dfaStep,`δ(${prev}, '${sym}')  →  ${dfaState}`,'cur');
+  updateStrViz(); drawDFA();
+  if (dfaStep >= dfaStr.length) setTimeout(showResult, 350);
+}
+
+function _stepNFA() {
+  if (dfaStep >= dfaStr.length) { showResult(); return; }
+  const sym = dfaStr[dfaStep];
+  _prevNfaStates = new Set(nfaStates);
+  const prev = _prevNfaStates;
+  const next = new Set();
+  prev.forEach(st => {
+    activeDFA.trans.filter(t=>t.f===st&&t.l===sym).forEach(t=>next.add(t.t));
+  });
+  dfaStep++;
+  if (next.size === 0) {
+    nfaStates = next;
+    addLog(dfaStep,`δ({${[...prev].join(',')}}, '${sym}') = ∅ — dead end`,'rej');
+    dfaStep = dfaStr.length; showResult(); return;
+  }
+  nfaStates = next;
+  addLog(dfaStep,`δ({${[...prev].join(',')}}, '${sym}') → {${[...next].join(',')}}`,'cur');
   updateStrViz(); drawDFA();
   if (dfaStep >= dfaStr.length) setTimeout(showResult, 350);
 }
@@ -207,11 +250,24 @@ function runDFA() {
 
 function showResult() {
   if (!activeDFA) return;
-  const st=activeDFA.states.find(s=>s.id===dfaState), ok=st&&st.acc;
-  const badge=document.getElementById('dfa-badge');
-  badge.className='dfa-badge '+(ok?'acc':'rej');
-  badge.textContent=ok?'✓ ACCEPTED':'✗ REJECTED';
-  addLog('—', ok?`State ${dfaState} is an accept state → ACCEPTED`:`State ${dfaState||'∅'} is not an accept state → REJECTED`, ok?'acc':'rej');
+  let ok;
+  if (isNFA) {
+    ok = [...nfaStates].some(s=>activeDFA.states.find(q=>q.id===s&&q.acc));
+    const badge=document.getElementById('dfa-badge');
+    badge.className='dfa-badge '+(ok?'acc':'rej');
+    badge.textContent=ok?'✓ ACCEPTED':'✗ REJECTED';
+    const accepting=[...nfaStates].filter(s=>activeDFA.states.find(q=>q.id===s&&q.acc));
+    addLog('—', ok
+      ? `Accept state(s) {${accepting.join(',')}} reached → ACCEPTED`
+      : `No accept state in {${[...nfaStates].join(',')}} → REJECTED`,
+      ok?'acc':'rej');
+  } else {
+    const st=activeDFA.states.find(s=>s.id===dfaState); ok=st&&st.acc;
+    const badge=document.getElementById('dfa-badge');
+    badge.className='dfa-badge '+(ok?'acc':'rej');
+    badge.textContent=ok?'✓ ACCEPTED':'✗ REJECTED';
+    addLog('—', ok?`State ${dfaState} is an accept state → ACCEPTED`:`State ${dfaState||'∅'} is not an accept state → REJECTED`, ok?'acc':'rej');
+  }
   drawDFA();
 }
 
@@ -279,6 +335,7 @@ function _prevFrom() {
 }
 function _isActiveTrans(f,t) {
   if (dfaStep<=0) return false;
+  if (isNFA) return _prevNfaStates.has(f) && nfaStates.has(t);
   return f===_prevFrom() && t===dfaState;
 }
 
@@ -293,7 +350,7 @@ function _arrowPath(x1,y1,x2,y2,curved,above) {
   const nx=dx/dist,ny=dy/dist;
   const sx=x1+nx*SR, sy=y1+ny*SR, ex=x2-nx*(SR+2), ey=y2-ny*(SR+2);
   if (curved) {
-    const perp=Math.min(70,dist*0.28)*(above?-1:1);
+    const perp=Math.min(95,dist*0.42)*(above?-1:1);
     const cpx=(sx+ex)/2+(-ny*perp), cpy=(sy+ey)/2+(nx*perp);
     return {d:`M ${sx} ${sy} Q ${cpx} ${cpy} ${ex} ${ey}`, lx:0.25*sx+0.5*cpx+0.25*ex, ly:0.25*sy+0.5*cpy+0.25*ey};
   }
@@ -326,15 +383,18 @@ function _renderTransitions() {
 
   const delMode=isCustom&&bMode==='del';
 
+  const _arrowColor = d => d.active ? (isNFA ? '#bd93f9' : '#00e5ff') : '#243352';
+  const _markerSfx  = d => d.active ? (isNFA ? '-nfa' : '-on') : '';
+
   // Paths
   _transG.selectAll('path.dfa-arrow')
     .data(gData, d=>`${d.f}||${d.t}`)
     .join('path').attr('class','dfa-arrow')
     .attr('d',d=>d.pi.d)
     .attr('fill','none')
-    .attr('stroke',d=>d.active?'#00e5ff':'#243352')
+    .attr('stroke',_arrowColor)
     .attr('stroke-width',d=>d.active?2.5:1.5)
-    .attr('marker-end',d=>`url(#dfa-ah${d.active?'-on':''})`)
+    .attr('marker-end',d=>`url(#dfa-ah${_markerSfx(d)})`)
     .style('cursor',delMode?'pointer':'default')
     .on('click',(e,d)=>{ if(!delMode) return; e.stopPropagation(); _deleteTrans(d); });
 
@@ -355,7 +415,7 @@ function _renderTransitions() {
     .attr('x',d=>d.pi.lx).attr('y',d=>d.pi.ly+1)
     .attr('text-anchor','middle').attr('dominant-baseline','middle')
     .attr('font-family','JetBrains Mono,monospace').attr('font-size','12')
-    .attr('fill',d=>d.active?'#00e5ff':'#3f5070')
+    .attr('fill',_arrowColor)
     .attr('pointer-events','none')
     .text(d=>d.labels.join(','));
 
@@ -430,30 +490,47 @@ function _renderStates() {
   // Rebuild children each render
   joined.selectAll('*').remove();
 
-  // 1. Glow ring (current sim state)
-  joined.filter(d=>d.id===dfaState)
+  // 1. Glow ring
+  joined.filter(d => isNFA ? nfaStates.has(d.id) : d.id===dfaState)
     .append('circle').attr('r',SR+14)
-    .attr('fill','rgba(0,229,255,0.15)')
+    .attr('fill', isNFA ? 'rgba(189,147,249,0.15)' : 'rgba(0,229,255,0.15)')
     .attr('pointer-events','none');
 
   // 2. Main circle
   joined.append('circle').attr('r',SR)
-    .attr('fill',d=>d.id===dfaState?'rgba(0,229,255,0.09)':d.id===bSelId?'rgba(247,185,85,0.08)':'rgba(10,15,26,0.9)')
-    .attr('stroke',d=>d.id===dfaState?'#00e5ff':d.id===bSelId?'#f7b955':d.acc?'#00ff88':'#243352')
-    .attr('stroke-width',d=>d.id===dfaState?2.8:1.6);
+    .attr('fill',d=>{
+      if (isNFA && nfaStates.has(d.id)) return 'rgba(189,147,249,0.09)';
+      if (d.id===dfaState) return 'rgba(0,229,255,0.09)';
+      if (d.id===bSelId)   return 'rgba(247,185,85,0.08)';
+      return 'rgba(10,15,26,0.9)';
+    })
+    .attr('stroke',d=>{
+      if (isNFA && nfaStates.has(d.id)) return '#bd93f9';
+      if (d.id===dfaState) return '#00e5ff';
+      if (d.id===bSelId)   return '#f7b955';
+      if (d.acc)           return '#00ff88';
+      return '#243352';
+    })
+    .attr('stroke-width',d=>(isNFA?nfaStates.has(d.id):d.id===dfaState)?2.8:1.6);
 
   // 3. Accept ring (on top of main fill)
   joined.filter(d=>d.acc)
     .append('circle').attr('r',SR-6)
     .attr('fill','none')
-    .attr('stroke',d=>d.id===dfaState?'#00e5ff':'#00ff88')
+    .attr('stroke',d=>{
+      if (isNFA && nfaStates.has(d.id)) return '#bd93f9';
+      if (d.id===dfaState) return '#00e5ff';
+      return '#00ff88';
+    })
     .attr('stroke-width',1.5).attr('pointer-events','none');
 
   // 4. Label
   joined.each(function(d){
     const g=d3.select(this);
+    const isNfaActive=isNFA&&nfaStates.has(d.id);
     const isCur=d.id===dfaState, isSel=d.id===bSelId;
-    const col=isCur?'#00e5ff':isSel?'#f7b955':'#8a9ab8';
+    const col=isNfaActive?'#bd93f9':isCur?'#00e5ff':isSel?'#f7b955':'#8a9ab8';
+    const sub=isNfaActive?'rgba(189,147,249,0.7)':isCur?'rgba(0,229,255,0.7)':isSel?'rgba(247,185,85,0.5)':'#3f5070';
     const parts=(d.lbl||d.id).split('\n');
     if (parts.length===1) {
       g.append('text').attr('text-anchor','middle').attr('dominant-baseline','middle')
@@ -465,8 +542,7 @@ function _renderStates() {
         .attr('fill',col).attr('pointer-events','none').text(parts[0]);
       g.append('text').attr('text-anchor','middle').attr('dominant-baseline','middle').attr('dy','9')
         .attr('font-family','JetBrains Mono,monospace').attr('font-size','10').attr('font-weight','300')
-        .attr('fill',isCur?'rgba(0,229,255,0.7)':isSel?'rgba(247,185,85,0.5)':'#3f5070')
-        .attr('pointer-events','none').text(parts[1]);
+        .attr('fill',sub).attr('pointer-events','none').text(parts[1]);
     }
   });
 }
@@ -547,7 +623,20 @@ function confirmLabel() {
   const pop=document.getElementById('dfa-label-pop');
   const val=document.getElementById('dlp-in').value.trim();
   if (!val||!bPendTrans) { cancelLabel(); return; }
-  val.split(',').map(s=>s.trim()).filter(Boolean).forEach(l=>{
+  const labels=val.split(',').map(s=>s.trim()).filter(Boolean);
+
+  if (!isNFA) {
+    // DFA: detect conflicts — same source + same symbol → different target
+    labels.forEach(l=>{
+      const conflict=activeDFA.trans.find(t=>t.f===bPendTrans.f&&t.l===l&&t.t!==bPendTrans.t);
+      if (conflict) {
+        activeDFA.trans=activeDFA.trans.filter(t=>!(t.f===bPendTrans.f&&t.l===l));
+        addLog('⚠', `DFA conflict on '${l}' from ${bPendTrans.f}: replaced ${bPendTrans.f}→${conflict.t} with ${bPendTrans.f}→${bPendTrans.t}`, 'warn');
+      }
+    });
+  }
+
+  labels.forEach(l=>{
     if (!activeDFA.trans.find(t=>t.f===bPendTrans.f&&t.t===bPendTrans.t&&t.l===l))
       activeDFA.trans.push({f:bPendTrans.f,t:bPendTrans.t,l});
   });
