@@ -84,13 +84,13 @@ function initDFASvg() {
       .attr('orient','auto-start-reverse')
       .append('path').attr('d','M0,1 L0,9 L9,5 Z').attr('fill', color);
   };
-  mkMarker('dfa-ah',     '#2a3d5a');
-  mkMarker('dfa-ah-on',  '#00e5ff');
-  mkMarker('dfa-ah-nfa', '#bd93f9');
+  mkMarker('dfa-ah',     '#8a6040');
+  mkMarker('dfa-ah-on',  '#f5a623');
+  mkMarker('dfa-ah-nfa', '#ffd166');
 
   _dfaSvg.append('rect').attr('class','dfa-bg-rect')
     .attr('x',0).attr('y',0).attr('width','100%').attr('height','100%')
-    .attr('fill','#05080f')
+    .attr('fill','#0d0804')
     .on('click', onBgClick)
     .on('contextmenu', e => e.preventDefault());
 
@@ -315,9 +315,9 @@ function renderDFA() {
 function _drawGrid() {
   const g=_dfaSvg.select('.dfa-grid-g'); g.selectAll('*').remove();
   for (let x=0;x<=_W;x+=40)
-    g.append('line').attr('x1',x).attr('y1',0).attr('x2',x).attr('y2',_H).attr('stroke','rgba(26,40,64,0.22)').attr('stroke-width',1);
+    g.append('line').attr('x1',x).attr('y1',0).attr('x2',x).attr('y2',_H).attr('stroke','rgba(42,26,10,0.2)').attr('stroke-width',1);
   for (let y=0;y<=_H;y+=40)
-    g.append('line').attr('x1',0).attr('y1',y).attr('x2',_W).attr('y2',y).attr('stroke','rgba(26,40,64,0.22)').attr('stroke-width',1);
+    g.append('line').attr('x1',0).attr('y1',y).attr('x2',_W).attr('y2',y).attr('stroke','rgba(42,26,10,0.2)').attr('stroke-width',1);
 }
 
 // Position from ratio
@@ -383,7 +383,7 @@ function _renderTransitions() {
 
   const delMode=isCustom&&bMode==='del';
 
-  const _arrowColor = d => d.active ? (isNFA ? '#bd93f9' : '#00e5ff') : '#243352';
+  const _arrowColor = d => d.active ? (isNFA ? '#ffd166' : '#f5a623') : '#8a6040';
   const _markerSfx  = d => d.active ? (isNFA ? '-nfa' : '-on') : '';
 
   // Paths
@@ -409,12 +409,12 @@ function _renderTransitions() {
     .attr('x',d=>d.pi.lx - (d.labels.join(',').length*3.8+6))
     .attr('y',d=>d.pi.ly-9)
     .attr('width',d=>d.labels.join(',').length*7.6+12)
-    .attr('height',16).attr('fill','#05080f').attr('rx',2);
+    .attr('height',16).attr('fill','#1e1008').attr('rx',2);
 
   lblGs.selectAll('text').data(d=>[d]).join('text')
     .attr('x',d=>d.pi.lx).attr('y',d=>d.pi.ly+1)
     .attr('text-anchor','middle').attr('dominant-baseline','middle')
-    .attr('font-family','JetBrains Mono,monospace').attr('font-size','12')
+    .attr('font-family','Fira Code,monospace').attr('font-size','13')
     .attr('fill',_arrowColor)
     .attr('pointer-events','none')
     .text(d=>d.labels.join(','));
@@ -426,7 +426,7 @@ function _renderTransitions() {
     if (s) { const p=sp(s);
       _transG.append('circle').attr('class','dfa-tsrc')
         .attr('cx',p.x).attr('cy',p.y).attr('r',SR+6)
-        .attr('fill','none').attr('stroke','#f7b955')
+        .attr('fill','none').attr('stroke','#f5a623')
         .attr('stroke-width',2).attr('stroke-dasharray','5,3')
         .attr('pointer-events','none');
     }
@@ -439,7 +439,7 @@ function _renderTransitions() {
     if (s) { const p=sp(s);
       _transG.append('line').attr('class','dfa-sarr')
         .attr('x1',p.x-SR-52).attr('y1',p.y).attr('x2',p.x-SR-2).attr('y2',p.y)
-        .attr('stroke','#3f5070').attr('stroke-width',2)
+        .attr('stroke','#8a6040').attr('stroke-width',2)
         .attr('marker-end','url(#dfa-ah)').attr('pointer-events','none');
     }
   }
@@ -493,23 +493,23 @@ function _renderStates() {
   // 1. Glow ring
   joined.filter(d => isNFA ? nfaStates.has(d.id) : d.id===dfaState)
     .append('circle').attr('r',SR+14)
-    .attr('fill', isNFA ? 'rgba(189,147,249,0.15)' : 'rgba(0,229,255,0.15)')
+    .attr('fill', isNFA ? 'rgba(255,209,102,0.12)' : 'rgba(245,166,35,0.12)')
     .attr('pointer-events','none');
 
   // 2. Main circle
   joined.append('circle').attr('r',SR)
     .attr('fill',d=>{
-      if (isNFA && nfaStates.has(d.id)) return 'rgba(189,147,249,0.09)';
-      if (d.id===dfaState) return 'rgba(0,229,255,0.09)';
-      if (d.id===bSelId)   return 'rgba(247,185,85,0.08)';
-      return 'rgba(10,15,26,0.9)';
+      if (isNFA && nfaStates.has(d.id)) return 'rgba(255,209,102,0.09)';
+      if (d.id===dfaState) return 'rgba(245,166,35,0.09)';
+      if (d.id===bSelId)   return 'rgba(245,166,35,0.07)';
+      return 'rgba(13,8,4,0.9)';
     })
     .attr('stroke',d=>{
-      if (isNFA && nfaStates.has(d.id)) return '#bd93f9';
-      if (d.id===dfaState) return '#00e5ff';
-      if (d.id===bSelId)   return '#f7b955';
-      if (d.acc)           return '#00ff88';
-      return '#243352';
+      if (isNFA && nfaStates.has(d.id)) return '#ffd166';
+      if (d.id===dfaState) return '#f5a623';
+      if (d.id===bSelId)   return '#f5a623';
+      if (d.acc)           return '#ff6b35';
+      return '#8a6040';
     })
     .attr('stroke-width',d=>(isNFA?nfaStates.has(d.id):d.id===dfaState)?2.8:1.6);
 
@@ -518,9 +518,9 @@ function _renderStates() {
     .append('circle').attr('r',SR-6)
     .attr('fill','none')
     .attr('stroke',d=>{
-      if (isNFA && nfaStates.has(d.id)) return '#bd93f9';
-      if (d.id===dfaState) return '#00e5ff';
-      return '#00ff88';
+      if (isNFA && nfaStates.has(d.id)) return '#ffd166';
+      if (d.id===dfaState) return '#f5a623';
+      return '#ff6b35';
     })
     .attr('stroke-width',1.5).attr('pointer-events','none');
 
@@ -529,19 +529,19 @@ function _renderStates() {
     const g=d3.select(this);
     const isNfaActive=isNFA&&nfaStates.has(d.id);
     const isCur=d.id===dfaState, isSel=d.id===bSelId;
-    const col=isNfaActive?'#bd93f9':isCur?'#00e5ff':isSel?'#f7b955':'#8a9ab8';
-    const sub=isNfaActive?'rgba(189,147,249,0.7)':isCur?'rgba(0,229,255,0.7)':isSel?'rgba(247,185,85,0.5)':'#3f5070';
+    const col=isNfaActive?'#ffd166':isCur?'#f5a623':isSel?'#f5a623':'#9a7050';
+    const sub=isNfaActive?'rgba(255,209,102,0.7)':isCur?'rgba(245,166,35,0.7)':isSel?'rgba(245,166,35,0.5)':'#5e3a1e';
     const parts=(d.lbl||d.id).split('\n');
     if (parts.length===1) {
       g.append('text').attr('text-anchor','middle').attr('dominant-baseline','middle')
-        .attr('font-family','JetBrains Mono,monospace').attr('font-size','13').attr('font-weight','500')
+        .attr('font-family','Fira Code,monospace').attr('font-size','13').attr('font-weight','500')
         .attr('fill',col).attr('pointer-events','none').text(parts[0]);
     } else {
       g.append('text').attr('text-anchor','middle').attr('dominant-baseline','middle').attr('dy','-7')
-        .attr('font-family','JetBrains Mono,monospace').attr('font-size','13').attr('font-weight','500')
+        .attr('font-family','Fira Code,monospace').attr('font-size','13').attr('font-weight','500')
         .attr('fill',col).attr('pointer-events','none').text(parts[0]);
       g.append('text').attr('text-anchor','middle').attr('dominant-baseline','middle').attr('dy','9')
-        .attr('font-family','JetBrains Mono,monospace').attr('font-size','10').attr('font-weight','300')
+        .attr('font-family','Fira Code,monospace').attr('font-size','10').attr('font-weight','300')
         .attr('fill',sub).attr('pointer-events','none').text(parts[1]);
     }
   });

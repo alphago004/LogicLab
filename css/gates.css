@@ -106,8 +106,8 @@
   transform: translateX(-50%);
   align-items: center;
   gap: 0.5rem;
-  background: rgba(0, 229, 255, 0.1);
-  border: 1px solid rgba(0, 229, 255, 0.3);
+  background: rgba(245, 166, 35, 0.1);
+  border: 1px solid rgba(245, 166, 35, 0.3);
   color: var(--cyan);
   font-family: var(--mono);
   font-size: 0.65rem;
@@ -119,8 +119,8 @@
   backdrop-filter: blur(8px);
 }
 .wiring-badge kbd {
-  background: rgba(0,229,255,0.15);
-  border: 1px solid rgba(0,229,255,0.3);
+  background: rgba(245,166,35,0.15);
+  border: 1px solid rgba(245,166,35,0.3);
   border-radius: 3px;
   padding: 0 4px;
   font-family: var(--mono);
@@ -146,7 +146,7 @@
   cursor: pointer;
   transition: all 0.13s;
 }
-.ctool-btn:hover { color: var(--cyan); border-color: rgba(0,229,255,0.3); }
+.ctool-btn:hover { color: var(--cyan); border-color: rgba(245,166,35,0.3); }
 
 /* SVG port hover cursor */
 .port    { cursor: crosshair; }
@@ -253,7 +253,7 @@
   color: var(--text2);
   padding: 0.35rem 0.4rem;
   text-align: center;
-  border-bottom: 1px solid rgba(26,40,64,0.4);
+  border-bottom: 1px solid rgba(42,26,10,0.4);
 }
 .truth-tbl tr.hi td           { background: var(--cyan-glow); color: var(--cyan); }
 .truth-tbl tr.hi td:last-child { font-weight: 700; }

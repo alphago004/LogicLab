@@ -7,34 +7,34 @@
 
 :root {
   /* Backgrounds */
-  --bg:  #05080f;
-  --bg2: #0a0f1a;
-  --bg3: #0f1724;
-  --card: #111d2e;
+  --bg:  #0d0804;
+  --bg2: #140c06;
+  --bg3: #1c1208;
+  --card: #22160a;
 
   /* Borders */
-  --border:  #1a2840;
-  --border2: #243352;
+  --border:  #2a1a0a;
+  --border2: #3a2510;
 
   /* Accent colors */
-  --cyan:      #00e5ff;
-  --cyan-dim:  #00b8cc;
-  --cyan-glow:  rgba(0, 229, 255, 0.12);
-  --cyan-glow2: rgba(0, 229, 255, 0.06);
-  --green:  #00ff88;
-  --orange: #ff8c42;
-  --red:    #ff4757;
-  --purple: #bd93f9;
+  --cyan:      #f5a623;
+  --cyan-dim:  #c97f10;
+  --cyan-glow:  rgba(245, 166, 35, 0.12);
+  --cyan-glow2: rgba(245, 166, 35, 0.06);
+  --green:  #ff6b35;
+  --orange: #ff4500;
+  --red:    #e84040;
+  --purple: #ffd166;
 
   /* Text */
-  --text:  #dce8f0;
-  --text2: #8a9ab8;
-  --text3: #3f5070;
+  --text:  #f2ddc4;
+  --text2: #9a7050;
+  --text3: #5e3a1e;
 
   /* Fonts */
-  --mono: 'JetBrains Mono', monospace;
-  --disp: 'Syne', sans-serif;
-  --body: 'DM Sans', sans-serif;
+  --mono: 'Fira Code', monospace;
+  --disp: 'Playfair Display', serif;
+  --body: 'Nunito', sans-serif;
 }
 
 html, body {
@@ -58,3 +58,14 @@ body {
 
 /* ── SELECTION ── */
 ::selection { background: var(--cyan-glow); color: var(--cyan); }
+
+/* ── WARM CANVAS TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(ellipse at 20% 50%, rgba(245, 100, 20, 0.04) 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 20%, rgba(255, 160, 30, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}

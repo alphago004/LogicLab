@@ -6,12 +6,12 @@
 
 // ── Gate catalogue ───────────────────────────────────────
 const CG = {
-  AND:  { n:2, fn:(a,b)=>a&b,       color:'#00e5ff' },
-  OR:   { n:2, fn:(a,b)=>a|b,       color:'#00ff88' },
-  NOT:  { n:1, fn:(a)  =>a^1,       color:'#ff8c42' },
-  XOR:  { n:2, fn:(a,b)=>a^b,       color:'#bd93f9' },
-  NAND: { n:2, fn:(a,b)=>(a&b)^1,   color:'#ff4757' },
-  NOR:  { n:2, fn:(a,b)=>(a|b)^1,   color:'#ffb347' },
+  AND:  { n:2, fn:(a,b)=>a&b,       color:'#f5a623' },
+  OR:   { n:2, fn:(a,b)=>a|b,       color:'#ff6b35' },
+  NOT:  { n:1, fn:(a)  =>a^1,       color:'#ff4500' },
+  XOR:  { n:2, fn:(a,b)=>a^b,       color:'#ffd166' },
+  NAND: { n:2, fn:(a,b)=>(a&b)^1,   color:'#e84040' },
+  NOR:  { n:2, fn:(a,b)=>(a|b)^1,   color:'#c97f10' },
 };
 
 // ── Gate shapes (local SVG coords, center = 0,0) ─────────
@@ -36,7 +36,7 @@ const SH = {
   OUTPUT: { isIO:true, inPins:[[-38,0]], outPin:null    },
 };
 
-const IO_COLOR = { INPUT:'#00e5ff', OUTPUT:'#00ff88' };
+const IO_COLOR = { INPUT:'#f5a623', OUTPUT:'#ff6b35' };
 
 // ── State ────────────────────────────────────────────────
 let _nodes   = {};
@@ -52,7 +52,7 @@ let _svg, _canvas, _wiresG, _nodesG, _previewG, _zoomBeh;
 
 // ── Utilities ────────────────────────────────────────────
 function uid()           { return 'n' + (_nextId++); }
-function gateColor(type) { return IO_COLOR[type] ?? CG[type]?.color ?? '#00e5ff'; }
+function gateColor(type) { return IO_COLOR[type] ?? CG[type]?.color ?? '#f5a623'; }
 function hexRgb(h)       { return h.replace('#','').match(/../g).map(x=>parseInt(x,16)).join(','); }
 
 function outWorld(nd) {
@@ -147,7 +147,7 @@ function setupSVG() {
 
   _svg.append('defs').html(`
     <pattern id="cgrid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M40,0 L0,0 0,40" fill="none" stroke="rgba(0,229,255,0.045)" stroke-width="0.8"/>
+      <path d="M40,0 L0,0 0,40" fill="none" stroke="rgba(245,166,35,0.04)" stroke-width="0.8"/>
     </pattern>
     <filter id="glow2" x="-60%" y="-60%" width="220%" height="220%">
       <feGaussianBlur stdDeviation="4" result="b"/>
@@ -233,8 +233,8 @@ function renderWires() {
     const on = fn.outputVal === 1, clr = gateColor(fn.type);
     d3.select(this)
       .attr('d', bez(x1,y1,x2,y2))
-      .attr('stroke', on ? clr : '#1e2d45')
-      .attr('opacity', on ? 1 : 0.45)
+      .attr('stroke', on ? clr : '#6b4020')
+      .attr('opacity', on ? 1 : 0.6)
       .attr('filter', on ? 'url(#glow1)' : null);
   });
 }
@@ -247,13 +247,13 @@ function renderPreview() {
   _previewG.append('path')
     .attr('d', bez(worldX,worldY,mouseX,mouseY))
     .attr('fill','none')
-    .attr('stroke','#00e5ff')
+    .attr('stroke','#f5a623')
     .attr('stroke-width',2.5)
     .attr('stroke-dasharray','7,4')
     .attr('opacity',0.7);
   _previewG.append('circle')
     .attr('cx',worldX).attr('cy',worldY).attr('r',5)
-    .attr('fill','#00e5ff').attr('opacity',0.6);
+    .attr('fill','#f5a623').attr('opacity',0.6);
 }
 
 // Nodes
@@ -378,7 +378,7 @@ function paintGate(g, nd) {
     g.append('line')
       .attr('x1',pin[0]-24).attr('y1',pin[1])
       .attr('x2',pin[0]).attr('y2',pin[1])
-      .attr('stroke', nd.inputVals[i] ? clr : '#1e2d45')
+      .attr('stroke', nd.inputVals[i] ? clr : '#5a3520')
       .attr('stroke-width',2.5).attr('stroke-linecap','round');
   });
 
@@ -387,16 +387,16 @@ function paintGate(g, nd) {
     g.append('line')
       .attr('x1',sh.outPin[0]).attr('y1',sh.outPin[1])
       .attr('x2',sh.outPin[0]+24).attr('y2',sh.outPin[1])
-      .attr('stroke', on ? clr : '#1e2d45')
+      .attr('stroke', on ? clr : '#5a3520')
       .attr('stroke-width',2.5).attr('stroke-linecap','round');
   }
 
   // Gate body
   g.append('path')
     .attr('d',sh.body)
-    .attr('fill','rgba(5,8,15,0.9)')
+    .attr('fill', on ? `rgba(${rgb},0.14)` : 'rgba(38,22,10,0.97)')
     .attr('stroke',clr)
-    .attr('stroke-width', sel ? 2.5 : 2)
+    .attr('stroke-width', sel ? 3 : 2.5)
     .attr('stroke-linejoin','round')
     .attr('filter', on ? 'url(#glow1)' : null);
 
@@ -405,12 +405,12 @@ function paintGate(g, nd) {
     if (sh.extra.type === 'circle') {
       g.append('circle')
         .attr('cx',sh.extra.cx).attr('cy',sh.extra.cy).attr('r',sh.extra.r)
-        .attr('fill','rgba(5,8,15,0.9)')
-        .attr('stroke',clr).attr('stroke-width',2);
+        .attr('fill', on ? `rgba(${rgb},0.14)` : 'rgba(38,22,10,0.97)')
+        .attr('stroke',clr).attr('stroke-width',2.5);
     } else {
       g.append('path')
         .attr('d',sh.extra.d)
-        .attr('fill','none').attr('stroke',clr).attr('stroke-width',2);
+        .attr('fill','none').attr('stroke',clr).attr('stroke-width',2.5);
     }
   }
 
@@ -428,15 +428,15 @@ function paintGate(g, nd) {
     // Visual circle (pointer-events off — hit zone handles interaction)
     const vc = g.append('circle')
       .attr('cx',pin[0]).attr('cy',pin[1]).attr('r',7)
-      .attr('fill', v ? `rgba(${rgb},0.25)` : 'rgba(14,22,38,0.95)')
-      .attr('stroke', v ? clr : '#2a3d5a').attr('stroke-width',2)
+      .attr('fill', v ? `rgba(${rgb},0.25)` : 'rgba(38,22,10,0.97)')
+      .attr('stroke', v ? clr : '#7a4828').attr('stroke-width',2)
       .style('pointer-events','none');
 
     // Pin letter label
     g.append('text')
       .attr('x',pin[0]-20).attr('y',pin[1]+4).attr('text-anchor','middle')
       .attr('font-family','JetBrains Mono,monospace').attr('font-size',9)
-      .attr('fill','#3f5070').style('pointer-events','none')
+      .attr('fill','#8a5830').style('pointer-events','none')
       .text(['A','B','C'][i]);
 
     // Large transparent hit zone
@@ -449,8 +449,8 @@ function paintGate(g, nd) {
     // Visual circle
     const vc = g.append('circle')
       .attr('cx',ox).attr('cy',oy).attr('r',7)
-      .attr('fill', on ? `rgba(${rgb},0.25)` : 'rgba(14,22,38,0.95)')
-      .attr('stroke', on ? clr : '#2a3d5a').attr('stroke-width',2)
+      .attr('fill', on ? `rgba(${rgb},0.25)` : 'rgba(38,22,10,0.97)')
+      .attr('stroke', on ? clr : '#7a4828').attr('stroke-width',2)
       .attr('filter', on ? 'url(#glow2)' : null)
       .style('pointer-events','none');
 
@@ -458,7 +458,7 @@ function paintGate(g, nd) {
     g.append('text')
       .attr('x',ox+20).attr('y',oy+4).attr('text-anchor','middle')
       .attr('font-family','JetBrains Mono,monospace').attr('font-size',9)
-      .attr('fill','#3f5070').style('pointer-events','none').text('F');
+      .attr('fill','#8a5830').style('pointer-events','none').text('F');
 
     // Large hit zone — drag to start wiring
     g.append('circle')
@@ -499,13 +499,13 @@ function paintIO(g, nd) {
     g.append('line')
       .attr('x1',sh.outPin[0]).attr('y1',0)
       .attr('x2',sh.outPin[0]+24).attr('y2',0)
-      .attr('stroke', on ? clr : '#1e2d45').attr('stroke-width',2.5);
+      .attr('stroke', on ? clr : '#5a3520').attr('stroke-width',2.5);
   }
   if (sh.inPins.length) {
     const [px] = sh.inPins[0];
     g.append('line')
       .attr('x1',px-24).attr('y1',0).attr('x2',px).attr('y2',0)
-      .attr('stroke', on ? clr : '#1e2d45').attr('stroke-width',2.5);
+      .attr('stroke', on ? clr : '#5a3520').attr('stroke-width',2.5);
   }
 
   // Body rect — data-iotoggle prevents node drag from firing on click
@@ -513,8 +513,8 @@ function paintIO(g, nd) {
     .attr('x',-W/2).attr('y',-H/2)
     .attr('width',W).attr('height',H)
     .attr('rx',10)
-    .attr('fill', on ? `rgba(${rgb},0.12)` : 'rgba(5,8,15,0.9)')
-    .attr('stroke', sel ? clr : (on ? clr : '#2a3d5a'))
+    .attr('fill', on ? `rgba(${rgb},0.12)` : 'rgba(38,22,10,0.97)')
+    .attr('stroke', sel ? clr : (on ? clr : '#7a4828'))
     .attr('stroke-width', sel ? 2.5 : 2)
     .attr('filter', on ? 'url(#glow1)' : null)
     .attr('data-iotoggle', isIn ? '1' : null)
@@ -526,7 +526,7 @@ function paintIO(g, nd) {
     .attr('x',0).attr('y',-7).attr('text-anchor','middle')
     .attr('font-family','JetBrains Mono,monospace')
     .attr('font-size',7.5).attr('font-weight',700)
-    .attr('fill','#3f5070').attr('letter-spacing','0.1em')
+    .attr('fill','#8a5830').attr('letter-spacing','0.1em')
     .text(nd.type).style('pointer-events','none');
 
   // Value
@@ -534,7 +534,7 @@ function paintIO(g, nd) {
     .attr('x',0).attr('y',12).attr('text-anchor','middle')
     .attr('font-family','JetBrains Mono,monospace')
     .attr('font-size',18).attr('font-weight',700)
-    .attr('fill', on ? clr : '#3f5070')
+    .attr('fill', on ? clr : '#b87840')
     .attr('filter', on ? 'url(#glow1)' : null)
     .text(val).style('pointer-events','none');
 
@@ -542,7 +542,7 @@ function paintIO(g, nd) {
     g.append('text')
       .attr('x',0).attr('y',H/2+14).attr('text-anchor','middle')
       .attr('font-family','JetBrains Mono,monospace')
-      .attr('font-size',6.5).attr('fill','#3f5070')
+      .attr('font-size',6.5).attr('fill','#8a5830')
       .text('click to toggle').style('pointer-events','none');
   }
 
@@ -551,8 +551,8 @@ function paintIO(g, nd) {
     const [ox,oy] = sh.outPin;
     const vc = g.append('circle')
       .attr('cx',ox).attr('cy',oy).attr('r',7)
-      .attr('fill', on ? `rgba(${rgb},0.25)` : 'rgba(14,22,38,0.95)')
-      .attr('stroke', on ? clr : '#2a3d5a').attr('stroke-width',2)
+      .attr('fill', on ? `rgba(${rgb},0.25)` : 'rgba(38,22,10,0.97)')
+      .attr('stroke', on ? clr : '#7a4828').attr('stroke-width',2)
       .attr('filter', on ? 'url(#glow2)' : null)
       .style('pointer-events','none');
 
@@ -574,8 +574,8 @@ function paintIO(g, nd) {
     const [px,py] = sh.inPins[0];
     const vc = g.append('circle')
       .attr('cx',px).attr('cy',py).attr('r',7)
-      .attr('fill', on ? `rgba(${rgb},0.25)` : 'rgba(14,22,38,0.95)')
-      .attr('stroke', on ? clr : '#2a3d5a').attr('stroke-width',2)
+      .attr('fill', on ? `rgba(${rgb},0.25)` : 'rgba(38,22,10,0.97)')
+      .attr('stroke', on ? clr : '#7a4828').attr('stroke-width',2)
       .style('pointer-events','none');
 
     addInPortZone(g, px, py, nd.id, 0, vc, clr);
@@ -665,8 +665,8 @@ function buildPalette() {
 
   const tipSec = section('How to wire');
   [
-    '1. <b style="color:#00e5ff">Drag</b> from the circle on the right side of any node',
-    '2. <b style="color:#00e5ff">Release</b> on the circle on the left side of a gate',
+    '1. <b style="color:#f5a623">Drag</b> from the circle on the right side of any node',
+    '2. <b style="color:#f5a623">Release</b> on the circle on the left side of a gate',
     '─────────────',
     'Or: click right circle → click left circle',
     '─────────────',
@@ -760,7 +760,7 @@ function updatePanel() {
     infoEl.innerHTML = `
       <div class="ci-type" style="color:${clr}">INPUT Node</div>
       <div class="ci-row"><span class="ci-lbl">Value</span>
-        <span class="ci-val" style="color:${nd.value?clr:'#3f5070'}">${nd.value}</span></div>
+        <span class="ci-val" style="color:${nd.value?clr:'#5e3a1e'}">${nd.value}</span></div>
       <div class="ci-hint">Click node body to toggle 0 / 1</div>`;
     truthEl.innerHTML = '';
     if (ttTitle) ttTitle.style.display = 'none';
@@ -771,7 +771,7 @@ function updatePanel() {
     infoEl.innerHTML = `
       <div class="ci-type" style="color:${clr}">OUTPUT Node</div>
       <div class="ci-row"><span class="ci-lbl">Value</span>
-        <span class="ci-val" style="color:${v?clr:'#3f5070'}">${v}</span></div>`;
+        <span class="ci-val" style="color:${v?clr:'#5e3a1e'}">${v}</span></div>`;
     truthEl.innerHTML = '';
     if (ttTitle) ttTitle.style.display = 'none';
     return;
@@ -783,11 +783,11 @@ function updatePanel() {
     <div class="ci-type" style="color:${clr}">${nd.type} Gate</div>
     <div class="ci-expr">${gat?.expr ?? ''}</div>
     <div class="ci-row"><span class="ci-lbl">A</span>
-      <span class="ci-val" style="color:${nd.inputVals[0]?clr:'#3f5070'}">${nd.inputVals[0]}</span></div>
+      <span class="ci-val" style="color:${nd.inputVals[0]?clr:'#5e3a1e'}">${nd.inputVals[0]}</span></div>
     ${gd.n>1?`<div class="ci-row"><span class="ci-lbl">B</span>
-      <span class="ci-val" style="color:${nd.inputVals[1]?clr:'#3f5070'}">${nd.inputVals[1]}</span></div>`:''}
+      <span class="ci-val" style="color:${nd.inputVals[1]?clr:'#5e3a1e'}">${nd.inputVals[1]}</span></div>`:''}
     <div class="ci-row"><span class="ci-lbl">Output</span>
-      <span class="ci-val" style="color:${nd.outputVal?clr:'#3f5070'}">${nd.outputVal}</span></div>
+      <span class="ci-val" style="color:${nd.outputVal?clr:'#5e3a1e'}">${nd.outputVal}</span></div>
     <div class="ci-desc">${gat?.desc ?? ''}</div>`;
 
   let h = `<table class="truth-tbl">`;

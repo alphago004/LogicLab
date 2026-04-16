@@ -39,7 +39,7 @@
   width: 100%;
   transition: border-color 0.2s;
 }
-.bool-in:focus { border-color: var(--cyan-dim); }
+.bool-in:focus { border-color: var(--cyan-dim); box-shadow: 0 0 0 2px rgba(245,166,35,0.08); }
 .bool-in.err   { border-color: var(--red); }
 
 /* Buttons */
@@ -56,7 +56,7 @@
   white-space: nowrap;
 }
 .bbtn-p { background: var(--cyan);  color: var(--bg);   font-weight: 600; }
-.bbtn-p:hover { box-shadow: 0 0 18px rgba(0, 229, 255, 0.3); }
+.bbtn-p:hover { box-shadow: 0 0 18px rgba(245, 166, 35, 0.35); }
 .bbtn-s { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
 .bbtn-s:hover { border-color: var(--border2); }
 
@@ -86,7 +86,7 @@
   cursor: pointer;
   transition: all 0.15s;
 }
-.epill:hover { color: var(--cyan); border-color: rgba(0, 229, 255, 0.3); }
+.epill:hover { color: var(--cyan); border-color: rgba(245, 166, 35, 0.3); }
 
 .bool-err {
   font-family: var(--mono);
@@ -128,9 +128,9 @@
   color: var(--text2);
   padding: 0.38rem 0.75rem;
   text-align: center;
-  border-bottom: 1px solid rgba(26, 40, 64, 0.4);
+  border-bottom: 1px solid rgba(42, 26, 10, 0.4);
 }
-.btbl tr:hover td { background: rgba(0, 229, 255, 0.025); }
+.btbl tr:hover td { background: rgba(245, 166, 35, 0.025); }
 
 .r1 { color: var(--green); font-weight: 600; }
 .r0 { color: var(--text3); }
